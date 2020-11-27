@@ -17,7 +17,10 @@ function Publish-ImageToUSB {
         [string]$imageIndex,
 
         [parameter(ParameterSetName = "Build", Mandatory = $true)]
-        [string]$diskNum
+        [string]$diskNum,
+
+        [parameter(ParameterSetName = "Build", Mandatory = $true)]
+        [string]$powershellVersion = "7.0.3"
     )
     #region Main Process
     try {
@@ -97,9 +100,12 @@ function Publish-ImageToUSB {
         Invoke-RestMethod -Method Get -Uri $script:provisionUrl -OutFile "$($usb.drive):\scripts\Invoke-Provision.ps1"
         #endregion
         #region download and apply powershell 7 to usb
-        Write-Host "`nGrabbing PWSH 7.." -ForegroundColor Yellow
-        Invoke-RestMethod -Method Get -Uri 'https://aka.ms/install-powershell.ps1' -OutFile "$env:Temp\install-powershell.ps1"
-        . $env:Temp\install-powershell.ps1 -Destination "$($usb.drive):\scripts\pwsh"
+        Write-Host "`nGrabbing PWSH ${powershellVersion}.." -ForegroundColor Yellow
+        $packageName = "PowerShell-${powershellVersion}-win-x64.zip"
+        $downloadURL = "https://github.com/PowerShell/PowerShell/releases/download/v${powershellVersion}/${packageName}"
+        Get-RemoteFile -fileUri $downloadURL -destination "$(usb.drive):\scripts\pwsh" -expand
+        #Invoke-RestMethod -Method Get -Uri 'https://aka.ms/install-powershell.ps1' -OutFile "$env:Temp\install-powershell.ps1"
+        #. $env:Temp\install-powershell.ps1 -Destination "$($usb.drive):\scripts\pwsh"
         #endregion download and apply powershell 7 to usb
         $completed = $true
     }
