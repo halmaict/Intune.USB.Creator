@@ -19,7 +19,8 @@ function Publish-ImageToUSB {
         [parameter(ParameterSetName = "Build", Mandatory = $true)]
         [string]$diskNum,
 
-        [parameter(ParameterSetName = "Build", Mandatory = $true)]
+        [parameter(ParameterSetName = "Build", Mandatory = $false)]
+        [parameter(ParameterSetName = "Default", Mandatory = $false)]
         [string]$powershellVersion = "7.0.3"
     )
     #region Main Process
@@ -103,9 +104,10 @@ function Publish-ImageToUSB {
         Write-Host "`nGrabbing PWSH ${powershellVersion}.." -ForegroundColor Yellow
         $packageName = "PowerShell-${powershellVersion}-win-x64.zip"
         $downloadURL = "https://github.com/PowerShell/PowerShell/releases/download/v${powershellVersion}/${packageName}"
-        Get-RemoteFile -fileUri $downloadURL -destination "$(usb.drive):\scripts\pwsh" -expand
-        #Invoke-RestMethod -Method Get -Uri 'https://aka.ms/install-powershell.ps1' -OutFile "$env:Temp\install-powershell.ps1"
-        #. $env:Temp\install-powershell.ps1 -Destination "$($usb.drive):\scripts\pwsh"
+        $tmp = New-TemporaryFile | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } -PassThru
+        Invoke-WebRequest -OutFile $tmp $downloadURL
+        $tmp | Expand-Archive -DestinationPath "$($usb.drive):\scripts\pwsh" -Force
+        $tmp | Remove-Item
         #endregion download and apply powershell 7 to usb
         $completed = $true
     }
