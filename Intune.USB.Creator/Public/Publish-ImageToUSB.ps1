@@ -71,7 +71,7 @@ function Publish-ImageToUSB {
         #endregion
         #region choose and partition USB
         Write-Host "`nConfiguring USB.." -ForegroundColor Yellow
-        if ($PsCmdlet.ParameterSetName -eq "Build") {
+        if ($diskNum) {
             $chooseDisk = Get-DiskToUse -diskNum $diskNum
         }
         else {
